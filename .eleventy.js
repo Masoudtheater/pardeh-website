@@ -8,7 +8,9 @@ module.exports = function (eleventyConfig) {
   // News articles, newest first
   eleventyConfig.addCollection("news", (collectionApi) => {
     return collectionApi.getFilteredByGlob("content/news/*.md").sort((a, b) => {
-      return (b.data.date || "").localeCompare(a.data.date || "");
+      const dateA = new Date(a.data.date || 0);
+      const dateB = new Date(b.data.date || 0);
+      return dateB - dateA;
     });
   });
 
