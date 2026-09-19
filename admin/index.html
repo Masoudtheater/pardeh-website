@@ -7,5 +7,13 @@
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    if (window.CMS) {
+      CMS.registerPreviewStyle(`
+        body { font-family: 'Work Sans', system-ui, sans-serif; background:#12141c; color:#ede6dc; padding:16px; }
+        h1,h2,h3 { font-family: Georgia, serif; color:#d9a441; }
+      `, { raw: true });
+    }
+  </script>
 </body>
 </html>

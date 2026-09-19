@@ -1,0 +1,89 @@
+---
+title: Interviews — Pardeh
+---
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="Interviews with Iranian directors, actors and crew members.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Work+Sans:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-word">{{ site.brand }}</span>
+    <span class="brand-tag" data-en="{{ site.brand_tag_en }}" data-fa="{{ site.brand_tag_fa }}">{{ site.brand_tag_en }}</span>
+  </div>
+  <nav>
+    <a class="navlink" href="/#news" data-en="News" data-fa="اخبار">News</a>
+    <a class="navlink" href="/#shows" data-en="Shows" data-fa="برنامه‌ها">Shows</a>
+    <a class="navlink" href="/reviews/" data-en="Reviews" data-fa="نقد و تحلیل">Reviews</a>
+    <a class="navlink" href="/interviews/" data-en="Interviews" data-fa="مصاحبه‌ها">Interviews</a>
+    <a class="navlink" href="/#about" data-en="About" data-fa="درباره ما">About</a>
+    <a class="navlink" href="/#contact" data-en="Contact" data-fa="تماس">Contact</a>
+  </nav>
+  <div class="header-actions">
+    <button id="langToggle" type="button">فا</button>
+    <a class="btn btn-primary" href="/#shows" data-en="Buy Tickets" data-fa="خرید بلیت">Buy Tickets</a>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow" data-en="Interviews" data-fa="مصاحبه‌ها">Interviews</span>
+    <h1 data-en="{{ site.interviews_title_en }}" data-fa="{{ site.interviews_title_fa }}">{{ site.interviews_title_en }}</h1>
+    <p data-en="Conversations with the directors, actors and crew behind the work currently on stage or screen." data-fa="گفتگو با کارگردانان، بازیگران و عوامل پشت‌صحنه آثاری که هم‌اکنون روی صحنه یا پرده هستند.">Conversations with the directors, actors and crew behind the work currently on stage or screen.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="interviews-grid">
+      {% for item in collections.interviews %}
+      {% set d = item.data %}
+      <article class="interview-card">
+        <div class="card-art">
+          {% if d.photo %}
+            <img src="{{ d.photo }}" alt="">
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <span class="interview-person">{{ d.person_name }} · <span data-en="{{ d.person_role_en }}" data-fa="{{ d.person_role_fa }}">{{ d.person_role_en }}</span></span>
+          <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
+          <p class="excerpt" data-en="{{ d.intro_en }}" data-fa="{{ d.intro_fa }}">{{ d.intro_en }}</p>
+          {% if d.body_en %}
+          <div data-en="{{ d.body_en | safe }}" data-fa="{{ d.body_fa | safe }}">{{ d.body_en | safe }}</div>
+          {% endif %}
+          {% if d.audio_url or d.video_url %}
+          <div class="media-links">
+            {% if d.audio_url %}<a href="{{ d.audio_url }}" data-en="Listen" data-fa="شنیدن">Listen</a>{% endif %}
+            {% if d.video_url %}<a href="{{ d.video_url }}" data-en="Watch" data-fa="تماشا">Watch</a>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span data-en="{{ site.footer_note_en }}" data-fa="{{ site.footer_note_fa }}">{{ site.footer_note_en }}</span>
+      <span data-en="Manage this site" data-fa="مدیریت سایت"><a href="/admin/" style="color:inherit">Manage this site →</a></span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

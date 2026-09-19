@@ -3,18 +3,6 @@ title: Pardeh — Iranian Cinema & Theatre
 ---
 <!doctype html>
 <html lang="en" dir="ltr">
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/admin/";
-        });
-      }
-    });
-  }
-</script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -33,6 +21,8 @@ title: Pardeh — Iranian Cinema & Theatre
   <nav>
     <a class="navlink" href="#news" data-en="News" data-fa="اخبار">News</a>
     <a class="navlink" href="#shows" data-en="Shows" data-fa="برنامه‌ها">Shows</a>
+    <a class="navlink" href="/reviews/" data-en="Reviews" data-fa="نقد و تحلیل">Reviews</a>
+    <a class="navlink" href="/interviews/" data-en="Interviews" data-fa="مصاحبه‌ها">Interviews</a>
     <a class="navlink" href="#about" data-en="About" data-fa="درباره ما">About</a>
     <a class="navlink" href="#contact" data-en="Contact" data-fa="تماس">Contact</a>
   </nav>
@@ -81,7 +71,10 @@ title: Pardeh — Iranian Cinema & Theatre
           {% endif %}
         </div>
         <div class="card-body">
-          <span class="tag {{ d.category }}" data-en="{{ d.category }}" data-fa="{% if d.category == 'theatre' %}تئاتر{% else %}سینما{% endif %}">{{ d.category | capitalize }}</span>
+          <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+            <span class="tag {{ d.category }}" data-en="{{ d.category }}" data-fa="{% if d.category == 'theatre' %}تئاتر{% else %}سینما{% endif %}">{{ d.category | capitalize }}</span>
+            <span class="badge {% if d.scope == 'hamedan' %}hamedan{% endif %}" data-en="{% if d.scope == 'hamedan' %}Hamedan{% else %}National{% endif %}" data-fa="{% if d.scope == 'hamedan' %}همدان{% else %}ملی{% endif %}">{% if d.scope == 'hamedan' %}Hamedan{% else %}National{% endif %}</span>
+          </div>
           <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
           <p class="excerpt" data-en="{{ d.excerpt_en }}" data-fa="{{ d.excerpt_fa }}">{{ d.excerpt_en }}</p>
           <div class="card-meta">
@@ -108,11 +101,75 @@ title: Pardeh — Iranian Cinema & Theatre
         <span class="show-date" data-en="{{ d.date_label_en }}" data-fa="{{ d.date_label_fa }}">{{ d.date_label_en }}</span>
         <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
         <span class="show-venue" data-en="{{ d.venue_en }}" data-fa="{{ d.venue_fa }}">{{ d.venue_en }}</span>
+        {% if d.crew_en %}
+        <p style="font-size:.82rem" data-en="{{ d.crew_en }}" data-fa="{{ d.crew_fa }}">{{ d.crew_en }}</p>
+        {% endif %}
         <div class="ticket-row">
           <span class="meta" data-en="{{ d.price_label_en }}" data-fa="{{ d.price_label_fa }}">{{ d.price_label_en }}</span>
           <button class="ticket-btn" type="button" data-en="Get Tickets" data-fa="خرید بلیت">Get Tickets</button>
         </div>
       </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="reviews">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 data-en="{{ site.reviews_title_en }}" data-fa="{{ site.reviews_title_fa }}">{{ site.reviews_title_en }}</h2>
+      <a href="/reviews/" data-en="All reviews →" data-fa="همه نقدها ←">All reviews →</a>
+    </div>
+    <div class="reviews-grid">
+      {% for item in collections.reviews %}
+      {% if loop.index <= 2 %}
+      {% set d = item.data %}
+      <article class="review-card">
+        <div class="stars" aria-hidden="true">{% for n in range(1,6) %}{% if n <= d.rating %}★{% else %}<span class="off">★</span>{% endif %}{% endfor %}</div>
+        <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
+        <span class="review-subject" data-en="{{ d.subject_en }}" data-fa="{{ d.subject_fa }}">{{ d.subject_en }}</span>
+        <p class="excerpt" data-en="{{ d.excerpt_en }}" data-fa="{{ d.excerpt_fa }}">{{ d.excerpt_en }}</p>
+        <div class="review-meta">
+          <span>{{ d.critic_name }}</span>
+        </div>
+      </article>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="interviews">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 data-en="{{ site.interviews_title_en }}" data-fa="{{ site.interviews_title_fa }}">{{ site.interviews_title_en }}</h2>
+      <a href="/interviews/" data-en="All interviews →" data-fa="همه مصاحبه‌ها ←">All interviews →</a>
+    </div>
+    <div class="interviews-grid">
+      {% for item in collections.interviews %}
+      {% if loop.index <= 2 %}
+      {% set d = item.data %}
+      <article class="interview-card">
+        <div class="card-art">
+          {% if d.photo %}
+            <img src="{{ d.photo }}" alt="">
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <span class="interview-person">{{ d.person_name }} · <span data-en="{{ d.person_role_en }}" data-fa="{{ d.person_role_fa }}">{{ d.person_role_en }}</span></span>
+          <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
+          <p class="excerpt" data-en="{{ d.intro_en }}" data-fa="{{ d.intro_fa }}">{{ d.intro_en }}</p>
+          {% if d.audio_url or d.video_url %}
+          <div class="media-links">
+            {% if d.audio_url %}<a href="{{ d.audio_url }}" data-en="Listen" data-fa="شنیدن">Listen</a>{% endif %}
+            {% if d.video_url %}<a href="{{ d.video_url }}" data-en="Watch" data-fa="تماشا">Watch</a>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endif %}
       {% endfor %}
     </div>
   </div>

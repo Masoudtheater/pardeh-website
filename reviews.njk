@@ -1,0 +1,81 @@
+---
+title: Reviews & Criticism — Pardeh
+---
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="In-depth reviews and criticism of Iranian cinema and theatre.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Work+Sans:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-word">{{ site.brand }}</span>
+    <span class="brand-tag" data-en="{{ site.brand_tag_en }}" data-fa="{{ site.brand_tag_fa }}">{{ site.brand_tag_en }}</span>
+  </div>
+  <nav>
+    <a class="navlink" href="/#news" data-en="News" data-fa="اخبار">News</a>
+    <a class="navlink" href="/#shows" data-en="Shows" data-fa="برنامه‌ها">Shows</a>
+    <a class="navlink" href="/reviews/" data-en="Reviews" data-fa="نقد و تحلیل">Reviews</a>
+    <a class="navlink" href="/interviews/" data-en="Interviews" data-fa="مصاحبه‌ها">Interviews</a>
+    <a class="navlink" href="/#about" data-en="About" data-fa="درباره ما">About</a>
+    <a class="navlink" href="/#contact" data-en="Contact" data-fa="تماس">Contact</a>
+  </nav>
+  <div class="header-actions">
+    <button id="langToggle" type="button">فا</button>
+    <a class="btn btn-primary" href="/#shows" data-en="Buy Tickets" data-fa="خرید بلیت">Buy Tickets</a>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow" data-en="Reviews & Criticism" data-fa="نقد و تحلیل">Reviews & Criticism</span>
+    <h1 data-en="{{ site.reviews_title_en }}" data-fa="{{ site.reviews_title_fa }}">{{ site.reviews_title_en }}</h1>
+    <p data-en="In-depth analysis of films, short films, animations and theatre productions — from Hamedan and across Iran." data-fa="تحلیل عمیق فیلم‌ها، فیلم‌های کوتاه، انیمیشن‌ها و نمایش‌های تئاتر — از همدان و سراسر ایران.">In-depth analysis of films, short films, animations and theatre productions — from Hamedan and across Iran.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="reviews-grid">
+      {% for item in collections.reviews %}
+      {% set d = item.data %}
+      <article class="review-card">
+        <div style="display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;">
+          <span class="tag {{ d.category }}" data-en="{{ d.category }}" data-fa="{% if d.category == 'theatre' %}تئاتر{% else %}سینما{% endif %}">{{ d.category | capitalize }}</span>
+          <div class="stars" aria-hidden="true">{% for n in range(1,6) %}{% if n <= d.rating %}★{% else %}<span class="off">★</span>{% endif %}{% endfor %}</div>
+        </div>
+        <h3 data-en="{{ d.title_en }}" data-fa="{{ d.title_fa }}">{{ d.title_en }}</h3>
+        <span class="review-subject" data-en="{{ d.subject_en }}" data-fa="{{ d.subject_fa }}">{{ d.subject_en }}</span>
+        <p class="excerpt" data-en="{{ d.excerpt_en }}" data-fa="{{ d.excerpt_fa }}">{{ d.excerpt_en }}</p>
+        {% if d.body_en %}
+        <div data-en="{{ d.body_en | safe }}" data-fa="{{ d.body_fa | safe }}">{{ d.body_en | safe }}</div>
+        {% endif %}
+        <div class="review-meta">
+          <span>{{ d.critic_name }}</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span data-en="{{ site.footer_note_en }}" data-fa="{{ site.footer_note_fa }}">{{ site.footer_note_en }}</span>
+      <span data-en="Manage this site" data-fa="مدیریت سایت"><a href="/admin/" style="color:inherit">Manage this site →</a></span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

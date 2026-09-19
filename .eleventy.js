@@ -21,6 +21,24 @@ module.exports = function (eleventyConfig) {
     });
   });
 
+  // Reviews & criticism, newest first
+  eleventyConfig.addCollection("reviews", (collectionApi) => {
+    return collectionApi.getFilteredByGlob("content/reviews/*.md").sort((a, b) => {
+      const dateA = new Date(a.data.date || 0);
+      const dateB = new Date(b.data.date || 0);
+      return dateB - dateA;
+    });
+  });
+
+  // Interviews, newest first
+  eleventyConfig.addCollection("interviews", (collectionApi) => {
+    return collectionApi.getFilteredByGlob("content/interviews/*.md").sort((a, b) => {
+      const dateA = new Date(a.data.date || 0);
+      const dateB = new Date(b.data.date || 0);
+      return dateB - dateA;
+    });
+  });
+
   return {
     dir: {
       input: ".",

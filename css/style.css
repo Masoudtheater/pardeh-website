@@ -152,6 +152,15 @@ nav a.navlink:hover::after{ transform:scaleX(1); }
 }
 .tag.cinema{ background:var(--accent-gold-bg); color:var(--accent); }
 .tag.theatre{ background:var(--accent-2-bg); color:var(--accent-2); }
+.tag.short{ background:rgba(166,163,184,0.18); color:var(--text-dim); }
+
+/* ---------- national/local badge ---------- */
+.badge{
+  display:inline-flex; width:fit-content; padding:.15rem .55rem; border-radius:999px;
+  font-size:.65rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  border:1px solid var(--border); color:var(--text-dim);
+}
+.badge.hamedan{ border-color:var(--accent); color:var(--accent); }
 .card h3{ font-size:1.05rem; line-height:1.35; }
 .card .excerpt{ font-size:.88rem; }
 .card .card-meta{ margin-top:auto; font-size:.78rem; color:var(--text-dim); display:flex; gap:.5rem; align-items:center; }
@@ -205,6 +214,40 @@ body.fa-mode .ticket-btn{ font-family:'Vazirmatn',sans-serif; padding:.65rem 1.5
 .fact h3{ font-size:1rem; margin-bottom:.25rem; }
 .fact p{ font-size:.9rem; }
 
+/* ---------- reviews ---------- */
+.reviews-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-6); }
+.review-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-3);
+}
+.review-card h3{ font-size:1.15rem; }
+.stars{ color:var(--accent); font-size:1rem; letter-spacing:.15em; }
+.stars .off{ color:var(--border); }
+.review-meta{ font-size:.8rem; color:var(--text-dim); display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.review-subject{ font-size:.85rem; color:var(--accent-2); font-weight:600; }
+
+/* ---------- interviews ---------- */
+.interviews-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-6); }
+.interview-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  overflow:hidden; display:flex; flex-direction:column;
+}
+.interview-card .card-art{ aspect-ratio:16/9; }
+.interview-card .card-body{ padding:var(--space-4); display:flex; flex-direction:column; gap:var(--space-3); }
+.interview-person{ font-size:.8rem; color:var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+.interview-card h3{ font-size:1.1rem; }
+.media-links{ display:flex; gap:var(--space-3); margin-top:var(--space-2); }
+.media-links a{
+  font-size:.8rem; font-weight:600; color:var(--accent-2); text-decoration:none;
+  border:1px solid var(--border); border-radius:var(--radius-sm); padding:.35rem .7rem;
+}
+.media-links a:hover{ border-color:var(--accent-2); }
+
+/* ---------- generic page header (for /reviews/ and /interviews/ pages) ---------- */
+.page-hero{ padding-block:var(--space-16) var(--space-8); }
+.page-hero h1{ font-size:clamp(1.8rem,2vw + 1rem,2.6rem); }
+.page-hero p{ margin-top:var(--space-3); max-width:56ch; }
+
 /* ---------- footer ---------- */
 footer{ padding-block:var(--space-16) var(--space-12); }
 .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:var(--space-8); margin-bottom:var(--space-12); }
@@ -238,6 +281,8 @@ body.fa-mode .footer-grid h4{ font-family:'Vazirmatn',sans-serif; }
   .hero-grid{ grid-template-columns:1fr; }
   .news-grid{ grid-template-columns:repeat(2,1fr); }
   .shows-grid{ grid-template-columns:1fr; }
+  .reviews-grid{ grid-template-columns:1fr; }
+  .interviews-grid{ grid-template-columns:1fr; }
   .about-grid{ grid-template-columns:1fr; }
   .footer-grid{ grid-template-columns:1fr 1fr; }
   nav{ order:3; width:100%; justify-content:flex-start; gap:var(--space-4); }

@@ -9,10 +9,16 @@ locale: "en"
 
 collections:
   - name: "news"
-    label: "News Articles"
+    label: "News Articles (اخبار)"
+    label_singular: "News Article"
     folder: "content/news"
     create: true
     slug: "{{slug}}"
+    summary: "{{title_en}} — {{date}}"
+    sortable_fields: ["date", "title_en"]
+    view_groups:
+      - label: "By coverage"
+        field: scope
     fields:
       - { label: "Title (English)", name: "title_en", widget: "string" }
       - { label: "Title (Persian)", name: "title_fa", widget: "string", required: false }
@@ -22,6 +28,14 @@ collections:
         name: "category"
         widget: "select"
         options: ["cinema", "theatre"]
+      - label: "Coverage (ملی یا محلی)"
+        name: "scope"
+        widget: "select"
+        default: "national"
+        hint: "Choose whether this is national news, or specific to Hamedan."
+        options:
+          - { label: "National (ملی)", value: "national" }
+          - { label: "Hamedan / Local (همدان)", value: "hamedan" }
       - { label: "Byline (English)", name: "byline_en", widget: "string", default: "Editorial" }
       - { label: "Byline (Persian)", name: "byline_fa", widget: "string", required: false }
       - { label: "Read time (English)", name: "read_time_en", widget: "string", default: "3 min read" }
@@ -30,29 +44,93 @@ collections:
       - { label: "Photo (optional — leave empty to use the default icon)", name: "image", widget: "image", required: false }
 
   - name: "shows"
-    label: "Upcoming Shows"
+    label: "Current Showings & Releases (روی صحنه / پرده)"
+    label_singular: "Show / Release"
     folder: "content/shows"
     create: true
     slug: "{{slug}}"
+    summary: "{{title_en}} — {{tag_en}}"
+    sortable_fields: ["order", "title_en"]
     fields:
-      - { label: "Show title (English)", name: "title_en", widget: "string" }
-      - { label: "Show title (Persian)", name: "title_fa", widget: "string", required: false }
-      - { label: "Tag (English) — e.g. Theatre, Puppet Theatre, Screening Night", name: "tag_en", widget: "string" }
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - { label: "Title (Persian)", name: "title_fa", widget: "string", required: false }
+      - { label: "Tag (English) — e.g. Theatre, Feature Film, Short Film", name: "tag_en", widget: "string" }
       - { label: "Tag (Persian)", name: "tag_fa", widget: "string", required: false }
-      - label: "Tag color"
+      - label: "Type"
         name: "tag_type"
         widget: "select"
-        options: ["cinema", "theatre"]
+        hint: "Controls the color badge on the site."
+        options:
+          - { label: "Theatre (تئاتر)", value: "theatre" }
+          - { label: "Cinema / Feature Film (سینما)", value: "cinema" }
+          - { label: "Short Film / Animation (کوتاه/انیمیشن)", value: "short" }
       - { label: "Date label (English) — e.g. Oct 14 – 22", name: "date_label_en", widget: "string" }
       - { label: "Date label (Persian)", name: "date_label_fa", widget: "string", required: false }
-      - { label: "Venue (English)", name: "venue_en", widget: "string" }
-      - { label: "Venue (Persian)", name: "venue_fa", widget: "string", required: false }
+      - { label: "Venue / Cinema (English)", name: "venue_en", widget: "string" }
+      - { label: "Venue / Cinema (Persian)", name: "venue_fa", widget: "string", required: false }
+      - { label: "Crew / cast credits (English, optional)", name: "crew_en", widget: "text", required: false, hint: "e.g. Director: ..., Starring: ..." }
+      - { label: "Crew / cast credits (Persian, optional)", name: "crew_fa", widget: "text", required: false }
       - { label: "Price label (English) — e.g. From 350,000 T", name: "price_label_en", widget: "string" }
       - { label: "Price label (Persian)", name: "price_label_fa", widget: "string", required: false }
       - { label: "Display order (lower shows first)", name: "order", widget: "number", default: 1 }
 
+  - name: "reviews"
+    label: "Reviews & Criticism (نقد و تحلیل)"
+    label_singular: "Review"
+    folder: "content/reviews"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title_en}} — {{rating}}★"
+    sortable_fields: ["date", "title_en"]
+    fields:
+      - { label: "Review title (English)", name: "title_en", widget: "string" }
+      - { label: "Review title (Persian)", name: "title_fa", widget: "string", required: false }
+      - { label: "Film or play being reviewed (English)", name: "subject_en", widget: "string" }
+      - { label: "Film or play being reviewed (Persian)", name: "subject_fa", widget: "string", required: false }
+      - label: "Type"
+        name: "category"
+        widget: "select"
+        options: ["cinema", "theatre"]
+      - { label: "Critic's name", name: "critic_name", widget: "string" }
+      - label: "Rating (out of 5)"
+        name: "rating"
+        widget: "number"
+        default: 4
+        min: 1
+        max: 5
+        hint: "A whole number from 1 to 5. Shown as stars on the site."
+      - { label: "Excerpt / summary (English)", name: "excerpt_en", widget: "text" }
+      - { label: "Excerpt / summary (Persian)", name: "excerpt_fa", widget: "text", required: false }
+      - { label: "Full review (English)", name: "body_en", widget: "markdown", required: false }
+      - { label: "Full review (Persian)", name: "body_fa", widget: "markdown", required: false }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Photo (optional)", name: "image", widget: "image", required: false }
+
+  - name: "interviews"
+    label: "Interviews (مصاحبه)"
+    label_singular: "Interview"
+    folder: "content/interviews"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title_en}} — {{person_name}}"
+    sortable_fields: ["date", "title_en"]
+    fields:
+      - { label: "Interviewee's name", name: "person_name", widget: "string" }
+      - { label: "Interviewee's role (English) — e.g. Director, Actor", name: "person_role_en", widget: "string" }
+      - { label: "Interviewee's role (Persian)", name: "person_role_fa", widget: "string", required: false }
+      - { label: "Interview title (English)", name: "title_en", widget: "string" }
+      - { label: "Interview title (Persian)", name: "title_fa", widget: "string", required: false }
+      - { label: "Short intro (English)", name: "intro_en", widget: "text" }
+      - { label: "Short intro (Persian)", name: "intro_fa", widget: "text", required: false }
+      - { label: "Full interview (English)", name: "body_en", widget: "markdown", required: false }
+      - { label: "Full interview (Persian)", name: "body_fa", widget: "markdown", required: false }
+      - { label: "Photo", name: "photo", widget: "image", required: false }
+      - { label: "Audio link (optional — e.g. a podcast file URL)", name: "audio_url", widget: "string", required: false }
+      - { label: "Video link (optional — e.g. a YouTube/Aparat URL)", name: "video_url", widget: "string", required: false }
+      - { label: "Date", name: "date", widget: "datetime" }
+
   - name: "settings"
-    label: "Site Settings"
+    label: "Site Settings (تنظیمات سایت)"
     files:
       - name: "general"
         label: "Site Content"
@@ -75,6 +153,11 @@ collections:
           - { label: "Featured card headline (Persian)", name: "featured_title_fa", widget: "text" }
           - { label: "Featured card meta (English)", name: "featured_meta_en", widget: "string" }
           - { label: "Featured card meta (Persian)", name: "featured_meta_fa", widget: "string" }
+
+          - { label: "Reviews section title (English)", name: "reviews_title_en", widget: "string" }
+          - { label: "Reviews section title (Persian)", name: "reviews_title_fa", widget: "string" }
+          - { label: "Interviews section title (English)", name: "interviews_title_en", widget: "string" }
+          - { label: "Interviews section title (Persian)", name: "interviews_title_fa", widget: "string" }
 
           - { label: "Newsletter title (English)", name: "newsletter_title_en", widget: "string" }
           - { label: "Newsletter title (Persian)", name: "newsletter_title_fa", widget: "string" }
