@@ -1,0 +1,115 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "uploads"
+public_folder: "/uploads"
+
+locale: "en"
+
+collections:
+  - name: "news"
+    label: "News Articles"
+    folder: "content/news"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - { label: "Title (Persian)", name: "title_fa", widget: "string", required: false }
+      - { label: "Excerpt (English)", name: "excerpt_en", widget: "text" }
+      - { label: "Excerpt (Persian)", name: "excerpt_fa", widget: "text", required: false }
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options: ["cinema", "theatre"]
+      - { label: "Byline (English)", name: "byline_en", widget: "string", default: "Editorial" }
+      - { label: "Byline (Persian)", name: "byline_fa", widget: "string", required: false }
+      - { label: "Read time (English)", name: "read_time_en", widget: "string", default: "3 min read" }
+      - { label: "Read time (Persian)", name: "read_time_fa", widget: "string", required: false }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Photo (optional — leave empty to use the default icon)", name: "image", widget: "image", required: false }
+
+  - name: "shows"
+    label: "Upcoming Shows"
+    folder: "content/shows"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Show title (English)", name: "title_en", widget: "string" }
+      - { label: "Show title (Persian)", name: "title_fa", widget: "string", required: false }
+      - { label: "Tag (English) — e.g. Theatre, Puppet Theatre, Screening Night", name: "tag_en", widget: "string" }
+      - { label: "Tag (Persian)", name: "tag_fa", widget: "string", required: false }
+      - label: "Tag color"
+        name: "tag_type"
+        widget: "select"
+        options: ["cinema", "theatre"]
+      - { label: "Date label (English) — e.g. Oct 14 – 22", name: "date_label_en", widget: "string" }
+      - { label: "Date label (Persian)", name: "date_label_fa", widget: "string", required: false }
+      - { label: "Venue (English)", name: "venue_en", widget: "string" }
+      - { label: "Venue (Persian)", name: "venue_fa", widget: "string", required: false }
+      - { label: "Price label (English) — e.g. From 350,000 T", name: "price_label_en", widget: "string" }
+      - { label: "Price label (Persian)", name: "price_label_fa", widget: "string", required: false }
+      - { label: "Display order (lower shows first)", name: "order", widget: "number", default: 1 }
+
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - name: "general"
+        label: "Site Content"
+        file: "_data/site.json"
+        fields:
+          - { label: "Site name", name: "brand", widget: "string" }
+          - { label: "Tagline (English)", name: "brand_tag_en", widget: "string" }
+          - { label: "Tagline (Persian)", name: "brand_tag_fa", widget: "string" }
+
+          - { label: "Hero eyebrow (English)", name: "hero_eyebrow_en", widget: "string" }
+          - { label: "Hero eyebrow (Persian)", name: "hero_eyebrow_fa", widget: "string" }
+          - { label: "Hero headline (English) — you may use <em> for emphasis", name: "hero_title_en", widget: "text" }
+          - { label: "Hero headline (Persian)", name: "hero_title_fa", widget: "text" }
+          - { label: "Hero subtext (English)", name: "hero_lede_en", widget: "text" }
+          - { label: "Hero subtext (Persian)", name: "hero_lede_fa", widget: "text" }
+
+          - { label: "Featured card label (English)", name: "featured_kicker_en", widget: "string" }
+          - { label: "Featured card label (Persian)", name: "featured_kicker_fa", widget: "string" }
+          - { label: "Featured card headline (English)", name: "featured_title_en", widget: "text" }
+          - { label: "Featured card headline (Persian)", name: "featured_title_fa", widget: "text" }
+          - { label: "Featured card meta (English)", name: "featured_meta_en", widget: "string" }
+          - { label: "Featured card meta (Persian)", name: "featured_meta_fa", widget: "string" }
+
+          - { label: "Newsletter title (English)", name: "newsletter_title_en", widget: "string" }
+          - { label: "Newsletter title (Persian)", name: "newsletter_title_fa", widget: "string" }
+          - { label: "Newsletter subtext (English)", name: "newsletter_sub_en", widget: "string" }
+          - { label: "Newsletter subtext (Persian)", name: "newsletter_sub_fa", widget: "string" }
+
+          - { label: "About eyebrow (English)", name: "about_eyebrow_en", widget: "string" }
+          - { label: "About eyebrow (Persian)", name: "about_eyebrow_fa", widget: "string" }
+          - { label: "About title (English)", name: "about_title_en", widget: "string" }
+          - { label: "About title (Persian)", name: "about_title_fa", widget: "string" }
+          - { label: "About paragraph 1 (English)", name: "about_p1_en", widget: "text" }
+          - { label: "About paragraph 1 (Persian)", name: "about_p1_fa", widget: "text" }
+          - { label: "About paragraph 2 (English)", name: "about_p2_en", widget: "text" }
+          - { label: "About paragraph 2 (Persian)", name: "about_p2_fa", widget: "text" }
+
+          - label: "Three highlight facts"
+            name: "facts"
+            widget: "list"
+            fields:
+              - { label: "Title (English)", name: "title_en", widget: "string" }
+              - { label: "Title (Persian)", name: "title_fa", widget: "string" }
+              - { label: "Body (English)", name: "body_en", widget: "string" }
+              - { label: "Body (Persian)", name: "body_fa", widget: "string" }
+
+          - { label: "Footer blurb (English)", name: "footer_blurb_en", widget: "text" }
+          - { label: "Footer blurb (Persian)", name: "footer_blurb_fa", widget: "text" }
+          - { label: "Contact email", name: "contact_email", widget: "string" }
+          - { label: "Location (English)", name: "contact_location_en", widget: "string" }
+          - { label: "Location (Persian)", name: "contact_location_fa", widget: "string" }
+          - label: "Social links"
+            name: "social"
+            widget: "object"
+            fields:
+              - { label: "Telegram URL", name: "telegram", widget: "string" }
+              - { label: "Instagram URL", name: "instagram", widget: "string" }
+              - { label: "YouTube URL", name: "youtube", widget: "string" }
+          - { label: "Footer copyright note (English)", name: "footer_note_en", widget: "string" }
+          - { label: "Footer copyright note (Persian)", name: "footer_note_fa", widget: "string" }

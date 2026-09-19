@@ -1,0 +1,13 @@
+{
+  "name": "pardeh-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pardeh — bilingual (EN/FA) news and ticketing site for Iranian cinema and theatre.",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}

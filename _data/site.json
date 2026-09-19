@@ -1,0 +1,67 @@
+{
+  "brand": "Pardeh",
+  "brand_tag_en": "Cinema & Stage",
+  "brand_tag_fa": "سینما و صحنه",
+
+  "hero_eyebrow_en": "Independent arts coverage — Tehran & beyond",
+  "hero_eyebrow_fa": "پوشش مستقل هنری — تهران و فراتر از آن",
+  "hero_title_en": "Where Iran's <em>screens</em> and <em>stages</em> meet the world",
+  "hero_title_fa": "جایی که <em>پرده سینما</em> و <em>صحنه تئاتر</em> ایران به دنیا می‌رسند",
+  "hero_lede_en": "News, reviews and interviews from Iranian cinema and theatre — written in English and Persian, with ticketing for live shows on the way.",
+  "hero_lede_fa": "اخبار، نقد و گفتگو از دنیای سینما و تئاتر ایران — به زبان فارسی و انگلیسی، همراه با خرید بلیت برای نمایش‌های زنده که به‌زودی راه‌اندازی می‌شود.",
+
+  "featured_kicker_en": "Featured tonight",
+  "featured_kicker_fa": "ویژه امشب",
+  "featured_title_en": "The Last Curtain returns to Vahdat Hall after a sold-out spring run",
+  "featured_title_fa": "«آخرین پرده» پس از اجرای پرفروش بهاری، به تالار وحدت بازمی‌گردد",
+  "featured_meta_en": "Drama · Tehran · Oct 14–22",
+  "featured_meta_fa": "نمایش · تهران · ۲۲–۱۴ مهر",
+
+  "newsletter_title_en": "Get the best of Iranian arts, weekly",
+  "newsletter_title_fa": "بهترین اخبار هنری ایران، هر هفته",
+  "newsletter_sub_en": "One email, every Thursday. No spam.",
+  "newsletter_sub_fa": "یک ایمیل، هر پنجشنبه. بدون هرزنامه.",
+
+  "about_eyebrow_en": "About Pardeh",
+  "about_eyebrow_fa": "درباره پرده",
+  "about_title_en": "One platform for Iran's screens and stages",
+  "about_title_fa": "یک پلتفرم برای پرده سینما و صحنه تئاتر ایران",
+  "about_p1_en": "Pardeh covers Iranian cinema and theatre in both English and Persian — news, reviews and the people behind the work, for readers inside Iran and around the world.",
+  "about_p1_fa": "پرده اخبار، نقد و افراد پشت‌صحنه سینما و تئاتر ایران را به دو زبان فارسی و انگلیسی پوشش می‌دهد — برای مخاطبان داخل ایران و سراسر جهان.",
+  "about_p2_en": "We're building toward direct ticketing for the shows we cover, so readers can go from a review straight to a seat.",
+  "about_p2_fa": "در حال راه‌اندازی خرید مستقیم بلیت برای نمایش‌هایی هستیم که پوشش می‌دهیم، تا مخاطب بتواند از خواندن نقد مستقیماً به تهیه بلیت برسد.",
+
+  "facts": [
+    {
+      "title_en": "Two languages, one stage",
+      "title_fa": "دو زبان، یک صحنه",
+      "body_en": "Every story published in English and Persian.",
+      "body_fa": "هر مطلب به فارسی و انگلیسی منتشر می‌شود."
+    },
+    {
+      "title_en": "Cinema + theatre + live events",
+      "title_fa": "سینما + تئاتر + رویدادهای زنده",
+      "body_en": "One place instead of a dozen scattered pages.",
+      "body_fa": "یک مکان به‌جای ده‌ها صفحه پراکنده."
+    },
+    {
+      "title_en": "Built for Iran's independent scene",
+      "title_fa": "ساخته‌شده برای صحنه مستقل ایران",
+      "body_en": "Small venues and independent productions, covered like the big ones.",
+      "body_fa": "سالن‌های کوچک و تولیدات مستقل، با همان اهمیت سالن‌های بزرگ."
+    }
+  ],
+
+  "footer_blurb_en": "Bilingual news and ticketing for Iranian cinema and theatre.",
+  "footer_blurb_fa": "اخبار و فروش بلیت دوزبانه برای سینما و تئاتر ایران.",
+  "contact_email": "hello@pardeh.example",
+  "contact_location_en": "Tehran, Iran",
+  "contact_location_fa": "تهران، ایران",
+  "social": {
+    "telegram": "#",
+    "instagram": "#",
+    "youtube": "#"
+  },
+  "footer_note_en": "© 2026 Pardeh — first working draft.",
+  "footer_note_fa": "© ۲۰۲۶ پرده — نخستین نسخه کاری."
+}
