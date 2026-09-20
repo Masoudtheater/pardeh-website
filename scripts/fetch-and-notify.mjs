@@ -118,23 +118,21 @@ RAW ITEMS:
 ${list}`;
 }
 
+// Try the lightweight, stable model first (usually far less congested than the
+// newest flagship model), then fall back to the newer flagship if needed.
+// If Google renames/retires a model again, add the new name to the FRONT of
+// this list rather than replacing it, so older fallbacks still work.
+const MODELS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"];
 const RETRYABLE_STATUS = new Set([429, 500, 503, 504]);
-const RETRY_DELAYS_MS = [5000, 15000, 30000]; // up to 3 retries: 5s, 15s, 30s
+const RETRY_DELAYS_MS = [4000, 10000]; // up to 2 retries per model: 4s, 10s
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function callGemini(items) {
-  const prompt = buildPrompt(items);
-  const model = "gemini-3.8-flash";
+async function callModelWithRetries(model, body) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-  const body = JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
-  });
 
-  let lastErr;
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     const res = await fetch(url, {
       method: "POST",
@@ -145,23 +143,44 @@ async function callGemini(items) {
     if (res.ok) {
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Gemini returned no text in its response.");
+      if (!text) throw new Error(`Model ${model} returned no text in its response.`);
+      return text;
+    }
+
+    const bodyText = (await res.text()).slice(0, 500);
+    const err = new Error(`Gemini API error ${res.status} (model ${model}): ${bodyText}`);
+
+    const canRetry = RETRYABLE_STATUS.has(res.status) && attempt < RETRY_DELAYS_MS.length;
+    if (!canRetry) throw err;
+
+    const delay = RETRY_DELAYS_MS[attempt];
+    console.warn(`${model} returned ${res.status} (temporary). Retrying in ${delay / 1000}s... (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length})`);
+    await sleep(delay);
+  }
+}
+
+async function callGemini(items) {
+  const prompt = buildPrompt(items);
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
+  });
+
+  let lastErr;
+  for (const model of MODELS) {
+    try {
+      const text = await callModelWithRetries(model, body);
       let cleaned = text.trim();
       if (cleaned.startsWith("```")) {
         cleaned = cleaned.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
       }
-      return JSON.parse(cleaned);
+      const parsed = JSON.parse(cleaned);
+      console.log(`Gemini call succeeded using model: ${model}`);
+      return parsed;
+    } catch (err) {
+      console.warn(`${model} failed after retries: ${err.message}`);
+      lastErr = err;
     }
-
-    const bodyText = (await res.text()).slice(0, 500);
-    lastErr = new Error(`Gemini API error ${res.status}: ${bodyText}`);
-
-    const canRetry = RETRYABLE_STATUS.has(res.status) && attempt < RETRY_DELAYS_MS.length;
-    if (!canRetry) throw lastErr;
-
-    const delay = RETRY_DELAYS_MS[attempt];
-    console.warn(`Gemini API returned ${res.status} (temporary). Retrying in ${delay / 1000}s... (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length})`);
-    await sleep(delay);
   }
   throw lastErr;
 }
