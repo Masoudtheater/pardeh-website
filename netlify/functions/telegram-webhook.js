@@ -1,12 +1,21 @@
 // Pardeh — Telegram approval webhook.
 //
 // Netlify Function that receives Telegram's callback_query updates when Masoud
-// taps "✅ تایید و انتشار" or "❌ رد کردن" on a candidate news message.
+// taps a button on a news message.
 //
-// Approve  -> reads the pending candidate from content/_pending/<id>.json (via the
-//             GitHub API), writes it as a real content/news/<slug>.md file, deletes
-//             the pending file, and edits the Telegram message to confirm.
-// Reject   -> just deletes the pending file and edits the Telegram message.
+// appr -> reads the pending candidate from content/_pending/<id>.json (via the
+//         GitHub API), writes it as a real content/news/<slug>.md file, deletes
+//         the pending file, and edits the Telegram message to confirm — with a
+//         new "🗑 حذف از سایت" button in case Masoud changes his mind later.
+// rej  -> just deletes the pending file and edits the Telegram message.
+// del  -> (only appears after an approve) finds the already-published file in
+//         content/news/ and deletes it from the site.
+//
+// The pending item's "image_url" (a generic, rights-cleared thematic photo
+// found via the Pexels API in scripts/fetch-and-notify.mjs — never taken from
+// the original news source) is carried straight into the published file's
+// "image" field. Masoud can always replace it with a specific photo later via
+// the "Photo" field in the CMS.
 //
 // Required environment variables (set in Netlify site settings, never in code):
 //   GH_PUBLISH_TOKEN     - a GitHub Personal Access Token with "repo" access
@@ -52,8 +61,13 @@ exports.handler = async (event) => {
     const chatId = cq.message.chat.id;
     const messageId = cq.message.message_id;
 
-    if (!id || (action !== "appr" && action !== "rej")) {
+    if (!id || (action !== "appr" && action !== "rej" && action !== "del")) {
       await answerCallback(cq.id, "درخواست نامعتبر");
+      return { statusCode: 200, body: "ok" };
+    }
+
+    if (action === "del") {
+      await handleDelete(cq, chatId, messageId, id);
       return { statusCode: 200, body: "ok" };
     }
 
@@ -84,7 +98,12 @@ exports.handler = async (event) => {
     await githubDeleteFile(pendingPath, file.sha, `chore: clear approved pending item ${id}`);
 
     await answerCallback(cq.id, "منتشر شد ✅");
-    await editMessage(chatId, messageId, `✅ منتشر شد در سایت:\n${item.title_fa || item.title_en || id}`);
+    await editMessage(
+      chatId,
+      messageId,
+      `✅ منتشر شد در سایت:\n${item.title_fa || item.title_en || id}`,
+      { inline_keyboard: [[{ text: "🗑 حذف از سایت", callback_data: `del:${id}` }]] }
+    );
 
     return { statusCode: 200, body: "ok" };
   } catch (err) {
@@ -93,6 +112,28 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: "ok" };
   }
 };
+
+async function handleDelete(cq, chatId, messageId, id) {
+  try {
+    const listing = await githubListDir("content/news");
+    if (!listing) {
+      await answerCallback(cq.id, "پوشه اخبار پیدا نشد.");
+      return;
+    }
+    const match = listing.find((f) => f.type === "file" && f.name.endsWith(`-${id}.md`));
+    if (!match) {
+      await answerCallback(cq.id, "این خبر قبلاً از سایت حذف شده یا پیدا نشد.");
+      await editMessage(chatId, messageId, "⚠️ این خبر قبلاً از سایت حذف شده یا دیگر موجود نیست.");
+      return;
+    }
+    await githubDeleteFile(match.path, match.sha, `chore: remove published news item ${id} (manual undo)`);
+    await answerCallback(cq.id, "از سایت حذف شد.");
+    await editMessage(chatId, messageId, "🗑 این خبر از سایت حذف شد.");
+  } catch (err) {
+    console.error("handleDelete error:", err);
+    await answerCallback(cq.id, "خطا در حذف. دوباره امتحان کنید.");
+  }
+}
 
 function slugify(s) {
   const base = String(s)
@@ -111,6 +152,8 @@ title_en: "${esc(item.title_en)}"
 title_fa: "${esc(item.title_fa)}"
 excerpt_en: "${esc(item.excerpt_en)}"
 excerpt_fa: "${esc(item.excerpt_fa)}"
+body_en: "${esc(item.body_en || "")}"
+body_fa: "${esc(item.body_fa || "")}"
 category: ${item.category === "theatre" ? "theatre" : "cinema"}
 scope: ${item.scope === "hamedan" ? "hamedan" : "national"}
 byline_en: "${esc(item.source_name || "Editorial")}"
@@ -118,7 +161,7 @@ byline_fa: "${esc(item.source_name || "دسک خبر")}"
 read_time_en: "2 min read"
 read_time_fa: "۲ دقیقه"
 date: ${today}
-image: ""
+image: "${esc(item.image_url || "")}"
 source_url: "${esc(item.source_url || "")}"
 source_name: "${esc(item.source_name || "")}"
 ---
@@ -131,6 +174,15 @@ async function githubGetFile(path) {
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub GET ${path} failed: ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+async function githubListDir(path) {
+  const res = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/contents/${path}`, {
+    headers: ghHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub GET (list) ${path} failed: ${res.status} ${await res.text()}`);
   return res.json();
 }
 
@@ -174,10 +226,12 @@ async function answerCallback(callbackQueryId, text) {
   }).catch(() => {});
 }
 
-async function editMessage(chatId, messageId, text) {
+async function editMessage(chatId, messageId, text, keyboard) {
+  const payload = { chat_id: chatId, message_id: messageId, text };
+  if (keyboard) payload.reply_markup = keyboard;
   await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, message_id: messageId, text }),
+    body: JSON.stringify(payload),
   }).catch(() => {});
 }

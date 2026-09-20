@@ -36,14 +36,16 @@ collections:
         options:
           - { label: "National (ملی)", value: "national" }
           - { label: "Hamedan / Local (همدان)", value: "hamedan" }
+      - { label: "Full story (English, optional — shown on the card below the short excerpt so readers don't have to leave the site)", name: "body_en", widget: "text", required: false }
+      - { label: "Full story (Persian, optional)", name: "body_fa", widget: "text", required: false }
       - { label: "Byline (English)", name: "byline_en", widget: "string", default: "Editorial" }
       - { label: "Byline (Persian)", name: "byline_fa", widget: "string", required: false }
       - { label: "Read time (English)", name: "read_time_en", widget: "string", default: "3 min read" }
       - { label: "Read time (Persian)", name: "read_time_fa", widget: "string", required: false }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Photo (optional — leave empty to use the default icon)", name: "image", widget: "image", required: false }
-      - { label: "Source URL (optional — for imported news; makes the card link out to the original article)", name: "source_url", widget: "string", required: false }
-      - { label: "Source name (optional — shown as attribution for imported news)", name: "source_name", widget: "string", required: false }
+      - { label: "Source URL (optional, kept for reference — not shown as a link on the site)", name: "source_url", widget: "string", required: false }
+      - { label: "Source name (optional, kept for reference)", name: "source_name", widget: "string", required: false }
 
   - name: "shows"
     label: "Current Showings & Releases (روی صحنه / پرده)"

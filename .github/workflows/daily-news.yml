@@ -29,12 +29,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: node scripts/fetch-and-notify.mjs
 
-      - name: Commit pending items and seen-news tracker
+      - name: Commit seen-news tracker
         run: |
           git config user.name "Pardeh News Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add content/_pending data/seen-news.json
+          git add data/seen-news.json
           git diff --cached --quiet || git commit -m "chore: daily news fetch $(date -u +%Y-%m-%d)"
           git push

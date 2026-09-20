@@ -5,8 +5,16 @@
 // 2. Skips anything already seen before (tracked in data/seen-news.json)
 // 3. Sends the new raw items to Google Gemini (free-tier API) to select, summarize,
 //    and translate the best ~8 stories for a Hamedan/Iran cinema & theatre audience
-// 4. Writes each selected candidate as a small pending file under content/_pending/
-// 5. Sends each candidate to Masoud on Telegram with Approve / Reject buttons
+// 4. Looks up a generic, rights-cleared thematic photo for each candidate from the
+//    Pexels API (free, no attribution required) — never from the original news
+//    source site, and never claiming to depict the exact film/production
+// 5. Pushes each candidate straight to GitHub as content/_pending/<id>.json via the
+//    API (not local git) so the file is live and findable the INSTANT the Telegram
+//    message goes out — this is what fixes the old "already processed / not found"
+//    race condition, where tapping Approve before the end-of-job git push finished
+//    could fail because the pending file wasn't on GitHub yet
+// 6. Sends each candidate to Masoud on Telegram (with the photo, if one was found)
+//    with Approve / Reject buttons
 //
 // Nothing is ever published to the live site from this script directly — approval
 // happens in Telegram, and the actual publish step lives in
@@ -22,11 +30,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SOURCES_PATH = path.join(ROOT, "scripts", "news-sources.json");
 const SEEN_PATH = path.join(ROOT, "data", "seen-news.json");
-const PENDING_DIR = path.join(ROOT, "content", "_pending");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_REPO = process.env.GITHUB_REPOSITORY; // "owner/repo" — provided automatically by GitHub Actions
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY; // optional — no image lookup if unset
+
+const GITHUB_API = "https://api.github.com";
 
 const MAX_ITEMS_TO_MODEL = 40;
 const MAX_ITEMS_TO_SELECT = 8;
@@ -37,6 +49,8 @@ function requireEnv() {
   if (!GEMINI_API_KEY) missing.push("GEMINI_API_KEY");
   if (!TELEGRAM_BOT_TOKEN) missing.push("TELEGRAM_BOT_TOKEN");
   if (!TELEGRAM_CHAT_ID) missing.push("TELEGRAM_CHAT_ID");
+  if (!GITHUB_TOKEN) missing.push("GITHUB_TOKEN");
+  if (!GITHUB_REPO) missing.push("GITHUB_REPOSITORY");
   if (missing.length) {
     console.error(`Missing required environment variable(s): ${missing.join(", ")}`);
     process.exit(1);
@@ -95,10 +109,11 @@ Below is a numbered list of raw news items gathered today from RSS feeds (a mix 
 TASK:
 1. Select the ${MAX_ITEMS_TO_SELECT} most relevant and interesting items for this audience. Priority order: (a) anything explicitly about Hamedan province, (b) Iranian cinema/theatre news generally, (c) major international cinema/theatre news. Skip anything not about cinema, theatre, or the performing/film arts. Skip near-duplicate stories, keeping only the best version.
 2. For each selected item, write your OWN short original summary — do not copy sentences verbatim from the snippet. 1-2 sentences, neutral editorial tone.
-3. Provide both an English and a Persian version of the title and summary. The Persian text must be natural, fluent Persian — not a literal word-for-word translation.
-4. Classify "category" as exactly "cinema" or "theatre" (best guess if unclear; default "cinema").
-5. Classify "scope" as exactly "hamedan" only if the item is specifically about Hamedan province, otherwise "national".
-6. Keep "source_url" as the exact LINK given, unchanged.
+3. Also write your OWN slightly longer original write-up ("body") of 3-5 sentences covering the same story in more depth, still in your own words — never copied verbatim from the snippet. This is what readers see on the site itself, so they don't need to visit the original source.
+4. Provide English and Persian versions of the title, the short excerpt, and the longer body. The Persian text must be natural, fluent Persian — not a literal word-for-word translation.
+5. Classify "category" as exactly "cinema" or "theatre" (best guess if unclear; default "cinema").
+6. Classify "scope" as exactly "hamedan" only if the item is specifically about Hamedan province, otherwise "national".
+7. Keep "source_url" as the exact LINK given, unchanged — it is kept only for internal record-keeping and is not shown to readers.
 
 Respond with ONLY a JSON array (no markdown fences, no commentary before or after), where each element has exactly these fields:
 [{
@@ -106,6 +121,8 @@ Respond with ONLY a JSON array (no markdown fences, no commentary before or afte
   "title_fa": "...",
   "excerpt_en": "...",
   "excerpt_fa": "...",
+  "body_en": "...",
+  "body_fa": "...",
   "category": "cinema",
   "scope": "national",
   "source_name": "...",
@@ -192,27 +209,121 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;");
 }
 
-async function sendTelegramMessage(text, id) {
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-  const res = await fetch(url, {
+// ---------- image lookup (Pexels) ----------
+//
+// We deliberately do NOT try to find a photo of the exact film/play being
+// reported on — a free stock library won't have official production stills,
+// and guessing based on the headline risks pulling an unrelated person's
+// photo into a news item about them. Instead we pick a real, high-quality,
+// clearly generic/thematic photo (a stage, a cinema, a film set) — safe to
+// reuse under Pexels' free commercial license, and never taken from the
+// original news source site. Masoud can always replace it with a specific,
+// rights-cleared photo later via the "Photo" field in the CMS.
+const IMAGE_QUERY_POOL = {
+  theatre: [
+    "theatre stage performance",
+    "theater curtain stage lighting",
+    "actors performing on stage",
+    "empty theatre auditorium",
+  ],
+  cinema: [
+    "cinema film reel",
+    "movie theater screen glow",
+    "film camera on set",
+    "cinema audience watching screen",
+  ],
+};
+
+function pickImageQuery(item, id) {
+  const pool = IMAGE_QUERY_POOL[item.category] || IMAGE_QUERY_POOL.cinema;
+  let sum = 0;
+  for (const ch of String(id)) sum += ch.charCodeAt(0);
+  return pool[sum % pool.length];
+}
+
+async function fetchPexelsImage(item, id) {
+  if (!PEXELS_API_KEY) return "";
+  const query = pickImageQuery(item, id);
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: PEXELS_API_KEY } }
+    );
+    if (!res.ok) {
+      console.warn(`Pexels search failed (${res.status}) for "${query}"`);
+      return "";
+    }
+    const data = await res.json();
+    const photo = data.photos && data.photos[0];
+    return photo ? photo.src.large : "";
+  } catch (err) {
+    console.warn(`Pexels lookup error: ${err.message}`);
+    return "";
+  }
+}
+
+// ---------- GitHub (push pending items immediately, no local git needed) ----------
+
+async function githubPutFile(filePath, content, message) {
+  const res = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/contents/${filePath}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+      "User-Agent": "pardeh-news-bot",
+    },
+    body: JSON.stringify({
+      message,
+      content: Buffer.from(content, "utf8").toString("base64"),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`GitHub PUT ${filePath} failed: ${res.status} ${await res.text()}`);
+  }
+  return res.json();
+}
+
+// ---------- Telegram ----------
+
+async function sendTelegramMessage(text, id, imageUrl) {
+  const keyboard = {
+    inline_keyboard: [
+      [
+        { text: "✅ تایید و انتشار", callback_data: `appr:${id}` },
+        { text: "❌ رد کردن", callback_data: `rej:${id}` },
+      ],
+    ],
+  };
+
+  if (imageUrl) {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        photo: imageUrl,
+        caption: text.slice(0, 1000), // Telegram caption limit is 1024 chars
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      }),
+    });
+    if (res.ok) return;
+    console.warn(`Telegram sendPhoto failed (${res.status}), falling back to text-only message.`);
+  }
+
+  const res2 = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: TELEGRAM_CHAT_ID,
       text,
       parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "✅ تایید و انتشار", callback_data: `appr:${id}` },
-            { text: "❌ رد کردن", callback_data: `rej:${id}` },
-          ],
-        ],
-      },
+      reply_markup: keyboard,
     }),
   });
-  if (!res.ok) {
-    console.warn(`Telegram send failed: ${res.status} ${await res.text()}`);
+  if (!res2.ok) {
+    console.warn(`Telegram send failed: ${res2.status} ${await res2.text()}`);
   }
 }
 
@@ -227,7 +338,6 @@ async function sendTelegramNote(text) {
 
 async function main() {
   requireEnv();
-  await mkdir(PENDING_DIR, { recursive: true });
   await mkdir(path.dirname(SEEN_PATH), { recursive: true });
 
   const sources = await loadJson(SOURCES_PATH, { feeds: [] });
@@ -276,14 +386,27 @@ async function main() {
     console.log("Model selected no relevant items today.");
   }
 
+  let sentCount = 0;
   for (const item of selected) {
     if (!item || !item.source_url) continue;
     const id = hashLink(item.source_url);
-    const pendingPath = path.join(PENDING_DIR, `${id}.json`);
-    await writeFile(
-      pendingPath,
-      JSON.stringify({ ...item, id, created_at: new Date().toISOString() }, null, 2)
-    );
+
+    const image_url = await fetchPexelsImage(item, id);
+    const payload = { ...item, id, image_url, created_at: new Date().toISOString() };
+
+    try {
+      await githubPutFile(
+        `content/_pending/${id}.json`,
+        JSON.stringify(payload, null, 2),
+        `chore: queue news candidate ${id} for approval`
+      );
+    } catch (err) {
+      // If we can't get the pending file onto GitHub, don't send a Telegram
+      // message for it either — that's exactly the old race condition
+      // (an Approve button pointing at a file that isn't there yet).
+      console.error(`Failed to push pending item ${id} to GitHub, skipping: ${err.message}`);
+      continue;
+    }
 
     const scopeLabel = item.scope === "hamedan" ? "📍 همدان" : "🌍 ملی/بین‌المللی";
     const catLabel = item.category === "theatre" ? "🎭 تئاتر" : "🎬 سینما";
@@ -295,7 +418,8 @@ async function main() {
       `منبع: ${escapeHtml(item.source_name || "")}`,
       escapeHtml(item.source_url),
     ].join("\n");
-    await sendTelegramMessage(text, id);
+    await sendTelegramMessage(text, id, image_url);
+    sentCount++;
   }
 
   for (const it of fresh) {
@@ -303,7 +427,7 @@ async function main() {
   }
   await writeFile(SEEN_PATH, JSON.stringify(seen, null, 2));
 
-  console.log(`Done. ${selected.length} candidate(s) sent to Telegram for approval.`);
+  console.log(`Done. ${sentCount} candidate(s) sent to Telegram for approval.`);
 }
 
 main().catch((err) => {
