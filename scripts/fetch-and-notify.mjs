@@ -120,7 +120,7 @@ ${list}`;
 
 async function callGemini(items) {
   const prompt = buildPrompt(items);
-  const model = "gemini-2.0-flash";
+  const model = "gemini-3.8-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
   const res = await fetch(url, {
     method: "POST",
