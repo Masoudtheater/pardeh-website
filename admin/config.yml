@@ -42,6 +42,8 @@ collections:
       - { label: "Read time (Persian)", name: "read_time_fa", widget: "string", required: false }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Photo (optional — leave empty to use the default icon)", name: "image", widget: "image", required: false }
+      - { label: "Source URL (optional — for imported news; makes the card link out to the original article)", name: "source_url", widget: "string", required: false }
+      - { label: "Source name (optional — shown as attribution for imported news)", name: "source_name", widget: "string", required: false }
 
   - name: "shows"
     label: "Current Showings & Releases (روی صحنه / پرده)"

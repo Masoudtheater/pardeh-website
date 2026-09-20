@@ -294,3 +294,5 @@ body.fa-mode .footer-grid h4{ font-family:'Vazirmatn',sans-serif; }
 @media (prefers-reduced-motion: reduce){
   .hero::before{ animation:none; }
 }
+.card-link{ text-decoration:none; color:inherit; display:block; }
+.card-link .card{ height:100%; }

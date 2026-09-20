@@ -60,6 +60,7 @@ title: Pardeh — Iranian Cinema & Theatre
     <div class="news-grid">
       {% for item in collections.news %}
       {% set d = item.data %}
+      {% if d.source_url %}<a class="card-link" href="{{ d.source_url }}" target="_blank" rel="noopener noreferrer">{% endif %}
       <article class="card">
         <div class="card-art {% if d.category == 'theatre' %}theatre{% endif %}">
           {% if d.image %}
@@ -82,6 +83,7 @@ title: Pardeh — Iranian Cinema & Theatre
           </div>
         </div>
       </article>
+      {% if d.source_url %}</a>{% endif %}
       {% endfor %}
     </div>
   </div>

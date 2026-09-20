@@ -1,0 +1,40 @@
+name: Daily News Automation
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch news and notify via Telegram
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/fetch-and-notify.mjs
+
+      - name: Commit pending items and seen-news tracker
+        run: |
+          git config user.name "Pardeh News Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add content/_pending data/seen-news.json
+          git diff --cached --quiet || git commit -m "chore: daily news fetch $(date -u +%Y-%m-%d)"
+          git push

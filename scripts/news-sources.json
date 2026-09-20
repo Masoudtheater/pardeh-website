@@ -1,0 +1,12 @@
+{
+  "feeds": [
+    { "name": "Variety", "url": "https://variety.com/v/film/feed/", "lang": "en" },
+    { "name": "Deadline", "url": "https://deadline.com/feed/", "lang": "en" },
+    { "name": "The Hollywood Reporter", "url": "https://www.hollywoodreporter.com/feed/", "lang": "en" },
+    { "name": "Screen Daily", "url": "https://www.screendaily.com/feed", "lang": "en" },
+    { "name": "Google News — سینما همدان", "url": "https://news.google.com/rss/search?q=%D8%B3%DB%8C%D9%86%D9%85%D8%A7%20%D9%87%D9%85%D8%AF%D8%A7%D9%86&hl=fa&gl=IR&ceid=IR:fa", "lang": "fa" },
+    { "name": "Google News — تئاتر همدان", "url": "https://news.google.com/rss/search?q=%D8%AA%D8%A6%D8%A7%D8%AA%D8%B1%20%D9%87%D9%85%D8%AF%D8%A7%D9%86&hl=fa&gl=IR&ceid=IR:fa", "lang": "fa" },
+    { "name": "Google News — سینمای ایران", "url": "https://news.google.com/rss/search?q=%D8%B3%DB%8C%D9%86%D9%85%D8%A7%DB%8C%20%D8%A7%DB%8C%D8%B1%D8%A7%D9%86&hl=fa&gl=IR&ceid=IR:fa", "lang": "fa" },
+    { "name": "Google News — تئاتر ایران", "url": "https://news.google.com/rss/search?q=%D8%AA%D8%A6%D8%A7%D8%AA%D8%B1%20%D8%A7%DB%8C%D8%B1%D8%A7%D9%86&hl=fa&gl=IR&ceid=IR:fa", "lang": "fa" }
+  ]
+}

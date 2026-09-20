@@ -5,9 +5,13 @@
   "description": "Pardeh — bilingual (EN/FA) news and ticketing site for Iranian cinema and theatre.",
   "scripts": {
     "build": "eleventy",
-    "start": "eleventy --serve"
+    "start": "eleventy --serve",
+    "fetch-news": "node scripts/fetch-and-notify.mjs"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
   }
 }
