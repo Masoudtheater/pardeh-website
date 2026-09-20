@@ -118,29 +118,52 @@ RAW ITEMS:
 ${list}`;
 }
 
+const RETRYABLE_STATUS = new Set([429, 500, 503, 504]);
+const RETRY_DELAYS_MS = [5000, 15000, 30000]; // up to 3 retries: 5s, 15s, 30s
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function callGemini(items) {
   const prompt = buildPrompt(items);
   const model = "gemini-3.8-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
-    }),
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
   });
-  if (!res.ok) {
-    throw new Error(`Gemini API error ${res.status}: ${(await res.text()).slice(0, 500)}`);
+
+  let lastErr;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error("Gemini returned no text in its response.");
+      let cleaned = text.trim();
+      if (cleaned.startsWith("```")) {
+        cleaned = cleaned.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
+      }
+      return JSON.parse(cleaned);
+    }
+
+    const bodyText = (await res.text()).slice(0, 500);
+    lastErr = new Error(`Gemini API error ${res.status}: ${bodyText}`);
+
+    const canRetry = RETRYABLE_STATUS.has(res.status) && attempt < RETRY_DELAYS_MS.length;
+    if (!canRetry) throw lastErr;
+
+    const delay = RETRY_DELAYS_MS[attempt];
+    console.warn(`Gemini API returned ${res.status} (temporary). Retrying in ${delay / 1000}s... (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length})`);
+    await sleep(delay);
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini returned no text in its response.");
-  let cleaned = text.trim();
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
-  }
-  return JSON.parse(cleaned);
+  throw lastErr;
 }
 
 function escapeHtml(s) {
